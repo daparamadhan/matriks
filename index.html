@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Matriks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+        <h1 class="text-xl font-bold text-center mb-4">Kalkulator Matriks</h1>
+        
+        <section>
+            <label class="block mb-2">Ordo Matriks (Baris x Kolom):</label>
+            <div class="flex flex-col sm:flex-row sm:space-x-2">
+                <input type="number" id="rows" placeholder="Baris" class="border p-2 w-full sm:w-1/2 rounded">
+                <input type="number" id="cols" placeholder="Kolom" class="border p-2 w-full sm:w-1/2 rounded mt-2 sm:mt-0">
+            </div>
+        </section>
+        
+        <section class="mt-4 flex flex-col sm:flex-row sm:space-x-2">
+            <button onclick="generateMatrix('A')" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Buat Matriks A</button>
+            <button onclick="generateMatrix('B')" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700 w-full mt-2 sm:mt-0">Buat Matriks B</button>
+        </section>
+        
+        <section id="matrixContainer" class="mt-4 overflow-x-auto"></section>
+        <section id="matrixContainer2" class="mt-4 overflow-x-auto"></section>
+        
+        <section class="mt-4">
+            <label class="block mb-2">Pilih Operasi:</label>
+            <select id="operation" class="border p-2 w-full rounded" onchange="toggleScalarInput()">
+                <option value="add">Penjumlahan</option>
+                <option value="subtract">Pengurangan</option>
+                <option value="multiply">Perkalian Matriks</option>
+                <option value="scalar">Perkalian dengan Skalar</option>
+            </select>
+            <input type="number" id="scalarValue" placeholder="Skalar" class="border p-2 w-full rounded mt-2 hidden">
+            <button onclick="calculateMatrix()" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-700 w-full mt-2">Hitung</button>
+        </section>
+        
+        <section id="result" class="mt-4 font-semibold overflow-x-auto"></section>
+    </div>
+    
+    <script>
+        function generateMatrix(matrixId) {
+            const rows = parseInt(document.getElementById('rows').value) || 0;
+            const cols = parseInt(document.getElementById('cols').value) || 0;
+            if (rows <= 0 || cols <= 0) return alert("Masukkan ordo matriks yang valid!");
+
+            let container = matrixId === 'A' ? 'matrixContainer' : 'matrixContainer2';
+            let matrixHtml = `<h3 class='font-bold mt-2'>Matriks ${matrixId}</h3>`;
+            matrixHtml += `<div class='grid grid-cols-${cols} gap-2 mt-2'>`;
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    matrixHtml += `<input type='number' id='cell${matrixId}-${i}-${j}' class='border p-2 w-full text-center rounded'>`;
+                }
+            }
+            matrixHtml += `</div>`;
+            document.getElementById(container).innerHTML = matrixHtml;
+        }
+
+        function toggleScalarInput() {
+            document.getElementById('scalarValue').classList.toggle('hidden', document.getElementById('operation').value !== 'scalar');
+        }
+
+        function calculateMatrix() {
+            const operation = document.getElementById('operation').value;
+            const rows = parseInt(document.getElementById('rows').value) || 0;
+            const cols = parseInt(document.getElementById('cols').value) || 0;
+            let resultMatrix = [];
+
+            if (operation === 'scalar') {
+                const scalar = parseFloat(document.getElementById('scalarValue').value) || 0;
+                for (let i = 0; i < rows; i++) {
+                    let row = [];
+                    for (let j = 0; j < cols; j++) {
+                        let val = parseFloat(document.getElementById(`cellA-${i}-${j}`)?.value) || 0;
+                        row.push(val * scalar);
+                    }
+                    resultMatrix.push(row);
+                }
+            } else if (operation === 'multiply') {
+                for (let i = 0; i < rows; i++) {
+                    let row = [];
+                    for (let j = 0; j < cols; j++) {
+                        let sum = 0;
+                        for (let k = 0; k < cols; k++) {
+                            let val1 = parseFloat(document.getElementById(`cellA-${i}-${k}`)?.value) || 0;
+                            let val2 = parseFloat(document.getElementById(`cellB-${k}-${j}`)?.value) || 0;
+                            sum += val1 * val2;
+                        }
+                        row.push(sum);
+                    }
+                    resultMatrix.push(row);
+                }
+            } else {
+                for (let i = 0; i < rows; i++) {
+                    let row = [];
+                    for (let j = 0; j < cols; j++) {
+                        let val1 = parseFloat(document.getElementById(`cellA-${i}-${j}`)?.value) || 0;
+                        let val2 = parseFloat(document.getElementById(`cellB-${i}-${j}`)?.value) || 0;
+                        let result = (operation === 'add') ? val1 + val2 : val1 - val2;
+                        row.push(result);
+                    }
+                    resultMatrix.push(row);
+                }
+            }
+            displayMatrix(resultMatrix, 'Hasil Operasi');
+        }
+
+        function displayMatrix(matrix, title) {
+            let resultHtml = `<h3 class='font-bold mt-4'>${title}</h3>`;
+            resultHtml += `<div class='grid grid-cols-${matrix[0].length} gap-2 mt-2'>`;
+            matrix.forEach(row => {
+                row.forEach(num => {
+                    resultHtml += `<span class='border p-2 w-full text-center rounded bg-gray-200'>${num}</span>`;
+                });
+            });
+            resultHtml += `</div>`;
+            document.getElementById('result').innerHTML = resultHtml;
+        }
+    </script>
+</body>
+</html>
